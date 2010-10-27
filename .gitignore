@@ -1,3 +1,7 @@
 pkg/*
+ext/**/*.bundle
+ext/**/Makefile
+ext/**/*.so
+ext/**/*.o
 *.gem
 .bundle
