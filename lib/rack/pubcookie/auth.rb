@@ -7,10 +7,10 @@ module Rack
     class Auth
 
       def initialize app, login_server, host, appid
-        @app = app
-        @login_server = login_server # https://webiso.andrew.cmu.edu/
-        @host = host # scheduleman.org
-        @appid = appid
+        @app          = app
+        @login_server = login_server
+        @host         = host
+        @appid        = appid
       end
 
       def call env
@@ -19,7 +19,7 @@ module Rack
         if request.path == '/auth/pubcookie'
           [200, {'Content-Type' => 'text/html'}, [login_page_html]]
         else
-          @app.call env
+          @app.call @env
         end
       end
 
