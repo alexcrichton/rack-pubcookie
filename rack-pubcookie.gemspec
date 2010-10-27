@@ -16,6 +16,9 @@ Gem::Specification.new do |s|
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.extensions    = ['ext/openssl/extconf.rb']
   s.require_paths = ['lib', 'ext']
-  
+
   s.add_dependency 'rack'
+
+  s.add_development_dependency 'rspec'
+  s.add_development_dependency 'rack-test'
 end
