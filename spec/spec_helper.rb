@@ -1,6 +1,6 @@
 require 'rubygems'
 require 'bundler'
-Bundler.setup :default, :development
+Bundler.require :default, :development
 
 require 'rspec/core'
 require 'rack/pubcookie'

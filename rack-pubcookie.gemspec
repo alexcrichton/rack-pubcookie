@@ -18,7 +18,9 @@ Gem::Specification.new do |s|
   s.require_paths = ['lib', 'ext']
 
   s.add_dependency 'rack'
+  s.add_dependency 'activesupport'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rack-test'
+  s.add_development_dependency 'nokogiri'
 end
