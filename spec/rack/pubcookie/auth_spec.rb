@@ -58,6 +58,26 @@ describe Rack::Pubcookie::Auth do
 
       last_request.env['REMOTE_USER'].should == 'testing'
     end
+
+    it "sets a cookie based on the response from the login server" do
+      escaped = Rack::Utils.escape Rack::Test.sample_response
+
+      post '/auth/pubcookie/callback',
+        'pubcookie_g' => Rack::Test.sample_response
+
+      last_response.headers['Set-Cookie'].should eql(
+        "pubcookie_g=#{escaped}; path=/; secure")
+
+    end
+
+    it "authenticates based off of the cookie given" do
+      set_cookie "pubcookie_g=#{Rack::Test.sample_response}"
+
+      post '/auth/pubcookie/callback',
+        'pubcookie_g' => Rack::Test.sample_response
+
+      last_request.env['REMOTE_USER'].should == 'testing'
+    end
   end
 
   describe "an invalid signature" do
