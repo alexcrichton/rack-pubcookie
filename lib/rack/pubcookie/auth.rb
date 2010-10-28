@@ -7,6 +7,9 @@ module Rack
   module Pubcookie
     class Auth
 
+      include AES
+      include DES
+
       def initialize app, login_server, host, appid, keyfile, granting_cert,
           opts = {}
         @app          = app
@@ -54,37 +57,25 @@ module Rack
         index2 = bytes.pop
         index1 = bytes.pop
 
-        # In the URL above, the initial IVEC is defined around line 63 and for
-        # some reason only the first byte is used in the xor'ing
-        ivec = @key[index2, 8]
-        ivec = ivec.map{ |i| i ^ 0x4c }
+        if true # Should eventually check for aes vs des encryption...
+          decrypted = des_decrypt bytes, index1, index2
+        else
+          decrypted = aes_decrypt bytes, index1, index2
+        end
 
-        key = @key[index1, 8]
-
-        c  = OpenSSL::Cipher.new('des-cfb')
-        c.decrypt
-        c.key = key.pack('c*')
-        c.iv  = ivec.pack('c*')
-
-        # This should be offset by the size of the granting key? Not sure...
-        signature = c.update(bytes[0..127].pack('c*'))
-        decrypted = c.update(bytes[128..-1].pack('c*'))
+        return nil if decrypted.nil?
 
         # These values are all from the pubcookie source. For more info, see the
         # above URL. The relevant size definitions are around line 42 and the
         # struct begins on line 69 ish
-        if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
-          user, version, appsrvid, appid, type, creds, pre_sess_tok,
-            create_ts, last_ts = decrypted.unpack('A42A4A40A128aaINN')
+        user, version, appsrvid, appid, type, creds, pre_sess_tok,
+          create_ts, last_ts = decrypted.unpack('A42A4A40A128aaINN')
 
-          create_ts = Time.at create_ts
-          last_ts   = Time.at last_ts
+        create_ts = Time.at create_ts
+        last_ts   = Time.at last_ts
 
-          if Time.now < create_ts + @options[:expires_after] && appid == @appid
-            user
-          else
-            nil
-          end
+        if Time.now < create_ts + @options[:expires_after] && appid == @appid
+          user
         else
           nil
         end
