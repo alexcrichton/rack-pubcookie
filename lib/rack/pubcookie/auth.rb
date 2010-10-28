@@ -73,17 +73,12 @@ module Rack
         # These values are all from the pubcookie source. For more info, see the
         # above URL. The relevant size definitions are around line 42 and the
         # struct begins on line 69 ish
-
         if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
-          user           = decrypted[0, 42].unpack('A*').first
-          version        = decrypted[42, 4].unpack('A*').first
-          appsrvid       = decrypted[46, 40].unpack('A*').first
-          appid          = decrypted[86, 128].unpack('A*').first
-          type           = decrypted[214, 1]
-          creds          = decrypted[215, 1]
-          pre_sess_token = decrypted[216, 4].unpack('I').first
-          create_ts      = Time.at decrypted[220, 4].unpack('N').first
-          last_ts        = Time.at decrypted[224, 4].unpack('N').first
+          user, version, appsrvid, appid, type, creds, pre_sess_tok,
+            create_ts, last_ts = decrypted.unpack('A42A4A40A128aaINN')
+
+          create_ts = Time.at create_ts
+          last_ts   = Time.at last_ts
 
           if Time.now < create_ts + @options[:expires_after] && appid == @appid
             user
