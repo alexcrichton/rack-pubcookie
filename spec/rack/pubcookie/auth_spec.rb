@@ -14,6 +14,9 @@ describe Rack::Pubcookie::Auth do
   end
 
   describe "a valid session" do
+    before :each do
+      Time.stub(:at).and_return Time.now
+    end
 
     it "renders a login page to send a request to the login server" do
       Kernel.stub(:rand).and_return(100)
