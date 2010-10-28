@@ -1,7 +1,7 @@
 rack-pubcookie
 ==============
 
-This is an implementation of the [pubcookie](http://pubcookie.org) protocol over Rack.
+This is an implementation of the [pubcookie](http://pubcookie.org) protocol over Rack in Ruby.
 
 Installation
 ------------
