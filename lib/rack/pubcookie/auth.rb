@@ -7,7 +7,8 @@ module Rack
   module Pubcookie
     class Auth
 
-      def initialize app, login_server, host, appid, keyfile, granting_cert
+      def initialize app, login_server, host, appid, keyfile, granting_cert,
+          opts = {}
         @app          = app
         @login_server = login_server
         @host         = host
@@ -15,6 +16,9 @@ module Rack
         @keyfile      = keyfile
         @granting = OpenSSL::X509::Certificate.new(::File.read(granting_cert))
         ::File.open(@keyfile, 'rb'){ |f| @key = f.read.bytes.to_a }
+
+        @options = opts
+        @options[:expires_after] = 24 * 3600 # 24 hrs
       end
 
       def call env
@@ -71,12 +75,21 @@ module Rack
         # struct begins on line 69 ish
 
         if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
-          user     = decrypted[0, 41].gsub(/\u0000+$/, '')
-          version  = decrypted[42, 4].gsub(/\u0000+$/, '')
-          appsrvid = decrypted[46, 40].gsub(/\u0000+$/, '')
-          appid    = decrypted[86, 128].gsub(/\u0000+$/, '')
+          user           = decrypted[0, 42].gsub(/\u0000+$/, '')
+          version        = decrypted[42, 4].gsub(/\u0000+$/, '')
+          appsrvid       = decrypted[46, 40].gsub(/\u0000+$/, '')
+          appid          = decrypted[86, 128].gsub(/\u0000+$/, '')
+          type           = decrypted[214, 1]
+          creds          = decrypted[215, 1]
+          pre_sess_token = decrypted[216, 4].unpack('I').first
+          create_ts      = Time.at decrypted[220, 4].unpack('N').first
+          last_ts        = Time.at decrypted[224, 4].unpack('N').first
 
-          appid == @appid ? user : nil
+          if Time.now < create_ts + @options[:expires_after] && appid == @appid
+            user
+          else
+            nil
+          end
         else
           nil
         end
