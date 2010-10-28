@@ -50,12 +50,12 @@ module Rack
         index2 = bytes.pop
         index1 = bytes.pop
 
-        ivec = @key[index2, 8]
         # In the URL above, the initial IVEC is defined around line 63 and for
-        # some reason only the first byte is used...
+        # some reason only the first byte is used in the xor'ing
+        ivec = @key[index2, 8]
         ivec = ivec.map{ |i| i ^ 0x4c }
 
-        key  = @key[index1, 8]
+        key = @key[index1, 8]
 
         c  = OpenSSL::Cipher.new('des-cfb')
         c.decrypt
