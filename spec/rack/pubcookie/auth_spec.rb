@@ -94,6 +94,20 @@ describe Rack::Pubcookie::Auth do
       last_response.headers['Set-Cookie'].should be_nil
       last_request.env['REMOTE_USER'].should be_nil
     end
+
+    it "doesn't allow an expired valid authentication cookie" do
+      # The login cookie contains a struct with the issued at timestamp as a
+      # 32 bit integer. We use Time.at on the integer to get the time object for
+      # when it was issued. By stubbing that, we can simulate the cookie being
+      # issued 2 days ago without having to work around different cookies and
+      # such
+      Time.stub(:at).and_return Time.now - 48 * 3600
+
+      post '/auth/pubcookie/callback',
+        'pubcookie_g' => Rack::Test.sample_response
+
+      last_request.env['REMOTE_USER'].should be_nil
+    end
   end
 
   describe "an invalid signature" do
