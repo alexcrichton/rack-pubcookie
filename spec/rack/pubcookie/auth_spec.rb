@@ -59,6 +59,15 @@ describe Rack::Pubcookie::Auth do
       last_request.env['REMOTE_USER'].should == 'testing'
     end
 
+    it "authenticates based off of the cookie given" do
+      escaped = Rack::Utils.escape Rack::Test.sample_response
+      set_cookie "pubcookie_g=#{escaped}"
+
+      post '/auth/pubcookie/callback'
+
+      last_request.env['REMOTE_USER'].should == 'testing'
+    end
+
     it "sets a cookie based on the response from the login server" do
       escaped = Rack::Utils.escape Rack::Test.sample_response
 
@@ -67,16 +76,14 @@ describe Rack::Pubcookie::Auth do
 
       last_response.headers['Set-Cookie'].should eql(
         "pubcookie_g=#{escaped}; path=/; secure")
-
     end
 
-    it "authenticates based off of the cookie given" do
+    it "doesn't have the Set-Cookie header when authenticated by a cookie" do
       set_cookie "pubcookie_g=#{Rack::Test.sample_response}"
 
-      post '/auth/pubcookie/callback',
-        'pubcookie_g' => Rack::Test.sample_response
+      post '/auth/pubcookie/callback'
 
-      last_request.env['REMOTE_USER'].should == 'testing'
+      last_response.headers['Set-Cookie'].should be_nil
     end
   end
 

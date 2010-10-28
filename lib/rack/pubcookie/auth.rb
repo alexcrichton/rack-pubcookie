@@ -23,12 +23,12 @@ module Rack
         if request.path == '/auth/pubcookie'
           response = Rack::Response.new login_page_html
         else
-
           request.env['REMOTE_USER'] = extract_username request
           status, headers, body = @app.call(request.env)
           response = Rack::Response.new body, status, headers
 
-          if request.params['pubcookie_g'] != request.cookies['pubcookie_g']
+          if !request.params['pubcookie_g'].nil? &&
+              request.params['pubcookie_g'] != request.cookies['pubcookie_g']
             response.set_cookie 'pubcookie_g', :path => '/', :secure => true,
               :value => request.params['pubcookie_g']
           end
