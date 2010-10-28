@@ -34,6 +34,8 @@ module Rack
       protected
 
       def extract_username request
+        # If coments below refer to a URL, they mean this one:
+        # http://svn.cac.washington.edu/viewvc/pubcookie/trunk/src/pubcookie.h?view=markup
         cookie = request.params['pubcookie_g'] || request.cookies['pubcookie_g']
 
         return nil if cookie.nil?
@@ -43,7 +45,9 @@ module Rack
         index1 = bytes.pop
 
         ivec = @key[index2, 8]
-        ivec = ivec.map{ |i| i ^ 0x4c } # Number from pubcookie source
+        # In the URL above, the initial IVEC is defined around line 63 and for
+        # some reason only the first byte is used...
+        ivec = ivec.map{ |i| i ^ 0x4c }
 
         key  = @key[index1, 8]
 
@@ -56,7 +60,9 @@ module Rack
         signature = c.update(bytes[0..127].map(&:chr).join)
         decrypted = c.update(bytes[128..-1].map(&:chr).join)
 
-        # These values are all from the pubcookie source
+        # These values are all from the pubcookie source. For more info, see the
+        # above URL. The relevant size definitions are around line 42 and the
+        # struct begins on line 69 ish
         user     = decrypted[0, 41].gsub(/\u0000+$/, '')
         version  = decrypted[42, 4].gsub(/\u0000+$/, '')
         appsrvid = decrypted[46, 40].gsub(/\u0000+$/, '')
