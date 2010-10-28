@@ -3,6 +3,15 @@ rack-pubcookie
 
 This is an implementation of the [pubcookie](http://pubcookie.org) protocol over Rack.
 
+Installation
+------------
+
+In a Gemfile: `gem 'rack-pubcookie'`
+
+Otherwise: `gem install rack-pubcookie`
+
+The gem can be required through either `rack-pubcookie` or `rack/pubcookie`
+
 Usage
 -----
 
