@@ -69,14 +69,14 @@ module Rack
         # These values are all from the pubcookie source. For more info, see the
         # above URL. The relevant size definitions are around line 42 and the
         # struct begins on line 69 ish
-        user     = decrypted[0, 41].gsub(/\u0000+$/, '')
-        version  = decrypted[42, 4].gsub(/\u0000+$/, '')
-        appsrvid = decrypted[46, 40].gsub(/\u0000+$/, '')
-        appid    = decrypted[86, 128].gsub(/\u0000+$/, '')
 
-        if appid == @appid &&
-            OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
-          user
+        if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
+          user     = decrypted[0, 41].gsub(/\u0000+$/, '')
+          version  = decrypted[42, 4].gsub(/\u0000+$/, '')
+          appsrvid = decrypted[46, 40].gsub(/\u0000+$/, '')
+          appid    = decrypted[86, 128].gsub(/\u0000+$/, '')
+
+          appid == @appid ? user : nil
         else
           nil
         end
