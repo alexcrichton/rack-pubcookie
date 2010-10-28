@@ -33,6 +33,12 @@ require 'rack/pubcookie'
 use Rack::Pubcookie::Auth, @login_server, @hostname, @appid, @keyfile_path,
   @granting_certificate_path
 
+# @login_server => 'login.example.com[:port]' (port optional)
+# @hostname     => 'myapp.example.com[:port]' (port optional)
+# @appid        => 'myappid'
+# @keyfile_path => '/path/to/key/file'
+# @granting_certificate_path => '/path/to/granting.crt'
+
 run Your::Application
 </pre>
 
