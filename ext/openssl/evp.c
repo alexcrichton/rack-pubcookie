@@ -28,7 +28,7 @@ VALUE evp_verify_md5(VALUE self, VALUE cert, VALUE signature, VALUE str) {
   return ret_val == 1 ? Qtrue : Qfalse;
 }
 
-Init_openssl_evp() {
+Init_evp() {
   VALUE cOpenSSL = rb_define_module("OpenSSL");
   VALUE cEVP     = rb_define_module_under(cOpenSSL, "EVP");
 

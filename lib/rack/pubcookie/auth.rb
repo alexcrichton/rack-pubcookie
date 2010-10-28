@@ -1,33 +1,74 @@
 require 'active_support/core_ext/object/to_query'
 require 'openssl'
+require 'openssl/evp'
 require 'base64'
 
 module Rack
   module Pubcookie
     class Auth
 
-      def initialize app, login_server, host, appid
+      def initialize app, login_server, host, appid, keyfile, granting_cert
         @app          = app
         @login_server = login_server
         @host         = host
         @appid        = appid
+        @keyfile      = keyfile
+        @granting = OpenSSL::X509::Certificate.new(::File.read(granting_cert))
+        ::File.open(@keyfile, 'rb'){ |f| @key = f.read.bytes.to_a }
       end
 
       def call env
-        @env = env
+        request = Rack::Request.new env
 
         if request.path == '/auth/pubcookie'
-          [200, {'Content-Type' => 'text/html'}, [login_page_html]]
+          response = Rack::Response.new login_page_html
         else
-          @app.call @env
+          request.env['REMOTE_USER'] = extract_username request
+          status, headers, body = @app.call(request.env)
+          response = Rack::Response.new body, status, headers
         end
-      end
 
-      def request
-        @request ||= Rack::Request.new(@env)
+        response.finish
       end
 
       protected
+
+      def extract_username request
+        cookie = request.params['pubcookie_g'] || request.cookies['pubcookie_g']
+
+        return nil if cookie.nil?
+
+        bytes  = Base64.decode64(cookie).bytes.to_a
+        index2 = bytes.pop
+        index1 = bytes.pop
+
+        ivec = @key[index2, 8]
+        ivec = ivec.map{ |i| i ^ 0x4c } # Number from pubcookie source
+
+        key  = @key[index1, 8]
+
+        c  = OpenSSL::Cipher.new('des-cfb')
+        c.decrypt
+        c.key = key.map(&:chr).join
+        c.iv  = ivec.map(&:chr).join
+
+        # This should be offset by the size of the granting key? Not sure...
+        signature = c.update(bytes[0..127].map(&:chr).join)
+        decrypted = c.update(bytes[128..-1].map(&:chr).join)
+
+        # These values are all from the pubcookie source
+        user     = decrypted[0, 41].gsub(/\u0000+$/, '')
+        version  = decrypted[42, 4].gsub(/\u0000+$/, '')
+        appsrvid = decrypted[46, 40].gsub(/\u0000+$/, '')
+        appid    = decrypted[86, 128].gsub(/\u0000+$/, '')
+
+        if appid == @appid &&
+            OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
+          user
+        else
+          nil
+        end
+      end
 
       # For a better description on what each of these values are, go to
       # https://wiki.doit.wisc.edu/confluence/display/WEBISO/Pubcookie+Granting+Request+Interface
@@ -56,6 +97,7 @@ module Rack
 
       def login_page_html
         input_val = Base64.encode64 request_login_arguments.to_query
+        input_val = input_val.gsub("\n", '')
 
         # Curious why exactly this template? This was taken from the pubcookie
         # source. We just do the same thing here...
