@@ -75,10 +75,10 @@ module Rack
         # struct begins on line 69 ish
 
         if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
-          user           = decrypted[0, 42].gsub(/\u0000+$/, '')
-          version        = decrypted[42, 4].gsub(/\u0000+$/, '')
-          appsrvid       = decrypted[46, 40].gsub(/\u0000+$/, '')
-          appid          = decrypted[86, 128].gsub(/\u0000+$/, '')
+          user           = decrypted[0, 42].unpack('A*').first
+          version        = decrypted[42, 4].unpack('A*').first
+          appsrvid       = decrypted[46, 40].unpack('A*').first
+          appid          = decrypted[86, 128].unpack('A*').first
           type           = decrypted[214, 1]
           creds          = decrypted[215, 1]
           pre_sess_token = decrypted[216, 4].unpack('I').first
