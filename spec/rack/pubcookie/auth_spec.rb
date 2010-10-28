@@ -4,19 +4,16 @@ describe Rack::Pubcookie::Auth do
 
   include Rack::Test::Methods
 
-  def session
-    last_request.env
+  def app
+    Rack::Builder.new {
+      use Rack::Pubcookie::Auth, 'example.com', 'myhost.com', 'testappid',
+        Rack::Test.fixture_path + '/test.com',
+        Rack::Test.fixture_path + '/granting.crt'
+      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
+    }.to_app
   end
 
   describe "a valid session" do
-    def app
-      Rack::Builder.new {
-        use Rack::Pubcookie::Auth, 'example.com', 'myhost.com', 'testappid',
-          Rack::Test.fixture_path + '/test.com',
-          Rack::Test.fixture_path + '/granting.crt'
-        run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
-      }.to_app
-    end
 
     it "renders a login page to send a request to the login server" do
       Kernel.stub(:rand).and_return(100)
@@ -84,6 +81,15 @@ describe Rack::Pubcookie::Auth do
       post '/auth/pubcookie/callback'
 
       last_response.headers['Set-Cookie'].should be_nil
+    end
+  end
+
+  describe "invalid authentications" do
+    it "doesn't tamper with any variables if no authentication is present" do
+      post '/auth/pubcookie/callback'
+
+      last_response.headers['Set-Cookie'].should be_nil
+      last_request.env['REMOTE_USER'].should be_nil
     end
   end
 
