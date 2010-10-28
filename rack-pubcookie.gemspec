@@ -1,5 +1,5 @@
 # -*- encoding: utf-8 -*-
-$:.push File.expand_path("../lib", __FILE__)
+$:.push File.expand_path('../lib', __FILE__)
 require 'rack/pubcookie/version'
 
 Gem::Specification.new do |s|
@@ -9,8 +9,8 @@ Gem::Specification.new do |s|
   s.authors     = ['Alex Crichton']
   s.email       = ['alex@alexcrichton.com']
   s.homepage    = 'http://github.com/alexcrichton/rack-pubcookie'
-  s.summary     = 'An implentation of pubcookie based on Rack'
-  s.description = 'Pubcookie for ruby!'
+  s.summary     = 'An implentation of pubcookie based on Rack in Ruby'
+  s.description = 'Pubcookie finally leaves the world of apache!'
 
   s.files         = `git ls-files`.split("\n")
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
