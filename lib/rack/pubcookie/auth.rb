@@ -63,12 +63,12 @@ module Rack
 
         c  = OpenSSL::Cipher.new('des-cfb')
         c.decrypt
-        c.key = key.map(&:chr).join
-        c.iv  = ivec.map(&:chr).join
+        c.key = key.pack('c*')
+        c.iv  = ivec.pack('c*')
 
         # This should be offset by the size of the granting key? Not sure...
-        signature = c.update(bytes[0..127].map(&:chr).join)
-        decrypted = c.update(bytes[128..-1].map(&:chr).join)
+        signature = c.update(bytes[0..127].pack('c*'))
+        decrypted = c.update(bytes[128..-1].pack('c*'))
 
         # These values are all from the pubcookie source. For more info, see the
         # above URL. The relevant size definitions are around line 42 and the
