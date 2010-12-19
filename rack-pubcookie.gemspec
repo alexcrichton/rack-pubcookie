@@ -12,7 +12,7 @@ Gem::Specification.new do |s|
   s.summary     = 'An implentation of pubcookie based on Rack in Ruby'
   s.description = 'Pubcookie finally leaves the world of apache!'
 
-  s.files         = `git ls-files`.split("\n")
+  s.files         = `git ls-files lib`.split("\n") + ['README.md']
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
   s.require_paths = ['lib']
 
