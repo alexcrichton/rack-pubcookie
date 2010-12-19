@@ -1,6 +1,5 @@
 require 'active_support/core_ext/object/to_query'
 require 'openssl'
-require 'openssl/evp'
 require 'base64'
 
 module Rack
