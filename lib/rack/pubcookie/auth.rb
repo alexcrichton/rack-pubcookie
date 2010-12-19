@@ -56,7 +56,7 @@ module Rack
         index2 = bytes.pop
         index1 = bytes.pop
 
-        if true # Should eventually check for aes vs des encryption...
+        if true # TODO: should check for aes vs des encryption...
           decrypted = des_decrypt bytes, index1, index2
         else
           decrypted = aes_decrypt bytes, index1, index2
