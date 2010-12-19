@@ -1,4 +1,4 @@
-require 'active_support/core_ext/object/to_query'
+require 'rack/utils'
 require 'openssl'
 require 'base64'
 
@@ -106,7 +106,10 @@ module Rack
       end
 
       def login_page_html
-        input_val = Base64.encode64 request_login_arguments.to_query
+        query = request_login_arguments.to_a.map{ |k, v|
+          "#{k}=#{Rack::Utils.escape v}"
+        }.join '&'
+        input_val = Base64.encode64 query
         input_val = input_val.gsub("\n", '')
 
         # Curious why exactly this template? This was taken from the pubcookie
