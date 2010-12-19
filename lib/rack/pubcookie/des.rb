@@ -19,7 +19,7 @@ module Rack
         signature = c.update(bytes[0..127].pack('c*'))
         decrypted = c.update(bytes[128..-1].pack('c*'))
 
-        if OpenSSL::EVP.verify_md5(@granting, signature, decrypted)
+        if @granting.public_key.verify(OpenSSL::Digest::MD5.new, signature, decrypted)
           decrypted
         else
           nil
