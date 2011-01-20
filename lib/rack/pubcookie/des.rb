@@ -1,5 +1,5 @@
 module Rack
-  module Pubcookie
+  class Pubcookie
     module DES
 
       def des_decrypt bytes, index1, index2
