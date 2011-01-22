@@ -12,13 +12,11 @@ Gem::Specification.new do |s|
   s.summary     = 'An implentation of pubcookie based on Rack in Ruby'
   s.description = 'Pubcookie finally leaves the world of apache!'
 
-  s.files         = `git ls-files`.split("\n")
+  s.files         = `git ls-files lib`.split("\n") + ['README.md']
   s.test_files    = `git ls-files -- {test,spec,features}/*`.split("\n")
-  s.extensions    = ['ext/openssl/extconf.rb']
-  s.require_paths = ['lib', 'ext']
+  s.require_paths = ['lib']
 
   s.add_dependency 'rack'
-  s.add_dependency 'activesupport'
 
   s.add_development_dependency 'rspec'
   s.add_development_dependency 'rack-test'

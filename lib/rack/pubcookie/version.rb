@@ -1,5 +1,5 @@
 module Rack
-  module Pubcookie
-    VERSION = '0.0.1'
+  class Pubcookie
+    VERSION = '0.0.3'
   end
 end

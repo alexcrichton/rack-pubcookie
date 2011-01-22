@@ -1,14 +1,15 @@
 require 'spec_helper'
 
-describe Rack::Pubcookie::Auth do
+describe Rack::Pubcookie do
 
   include Rack::Test::Methods
 
   def app
     Rack::Builder.new {
-      use Rack::Pubcookie::Auth, 'example.com', 'myhost.com', 'testappid',
-        Rack::Test.fixture_path + '/test.com',
-        Rack::Test.fixture_path + '/granting.crt'
+      use Rack::Pubcookie, :login_server => 'example.com',
+        :host => 'myhost.com', :appid => 'testappid',
+        :keyfile => Rack::Test.fixture_path + '/test.com',
+        :granting_cert => Rack::Test.fixture_path + '/granting.crt'
       run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
     }.to_app
   end
@@ -113,9 +114,10 @@ describe Rack::Pubcookie::Auth do
   describe "an invalid signature" do
     def app
       Rack::Builder.new {
-        use Rack::Pubcookie::Auth, 'example.com', 'myhost.com', 'testappid',
-          Rack::Test.fixture_path + '/test.com',
-          Rack::Test.fixture_path + '/invalid.crt'
+        use Rack::Pubcookie, :login_server => 'example.com',
+          :host => 'myhost.com', :appid => 'testappid',
+          :keyfile => Rack::Test.fixture_path + '/test.com',
+          :granting_cert => Rack::Test.fixture_path + '/invalid.crt'
         run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
       }.to_app
     end
