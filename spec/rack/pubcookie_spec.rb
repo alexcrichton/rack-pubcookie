@@ -129,7 +129,7 @@ describe Rack::Pubcookie do
       last_request.env['REMOTE_USER'].should be_nil
     end
   end
-  
+
   context "with a custom return url" do
     def app
       Rack::Builder.new {
@@ -141,23 +141,23 @@ describe Rack::Pubcookie do
         run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
       }.to_app
     end
-      
+
     it "displays the return url in the relay_url parameter of the redirect form" do
       redirect_form = Nokogiri::HTML( get('/auth/pubcookie').body )
-      
+
       relay_url = redirect_form.css('input[name=relay_url]').attribute('value').value
-      
+
       relay_url.should include("/users/auth/pubcookie/callback")
     end
-    
+
     it "encodes the return url in the 'seven' parameter of the pubcookie request" do
       redirect_form = Nokogiri::HTML( get('/auth/pubcookie').body )
       pubcookie_request_string = redirect_form.css('input[name=pubcookie_g_req]').attribute('value').value
       pubcookie_request_hash = Rack::Utils.parse_query Base64.decode64(pubcookie_request_string)
-      
+
       pubcookie_request_hash['seven'].should == Base64.encode64('/users/auth/pubcookie/callback').chomp
     end
-  
+
   end
 
 end
