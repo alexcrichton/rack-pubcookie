@@ -18,6 +18,7 @@ module Rack
         @appid         = options[:appid]
         @keyfile       = options[:keyfile]
         @granting_cert = options[:granting_cert]
+        @return_to     = options[:return_to] || "/auth/pubcookie/callback"
 
         if @login_server.nil? || @host.nil? || @appid.nil? || @keyfile.nil? ||
             @granting_cert.nil?
@@ -89,7 +90,7 @@ module Rack
   <form method='post' action="https://#{@login_server}" name='relay'>
     <input type='hidden' name='pubcookie_g_req' value="#{input_val}">
     <input type='hidden' name='post_stuff' value="">
-    <input type='hidden' name='relay_url' value="https://#{@host}/auth/pubcookie/callback">
+    <input type='hidden' name='relay_url' value="https://#{@host}#{callback_path}">
     <noscript>
       <p align='center'>You do not have Javascript turned on,   please click the button to continue.
       <p align='center'>
@@ -102,7 +103,7 @@ HTML
       end
 
       def callback_path
-        '/auth/pubcookie/callback'
+        @return_to
       end
 
       protected
