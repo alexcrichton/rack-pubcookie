@@ -30,14 +30,14 @@ Once these six pieces have been obtained, you can then use it like this:
 # This is located in config.ru
 require 'rack/pubcookie'
 
-use Rack::Pubcookie, :login_server => @login_server, :host_name => @hostname,
-  :appid => @appid, :keyfile_path => @keyfile_path,
+use Rack::Pubcookie, :login_server => @login_server, :host => @hostname,
+  :appid => @appid, :keyfile => @keyfile_path,
   :granting_cert => @granting_certificate_path
 
 # @login_server => 'login.example.com[:port]' (port optional)
-# @hostname     => 'myapp.example.com[:port]' (port optional)
+# @host         => 'myapp.example.com[:port]' (port optional)
 # @appid        => 'myappid'
-# @keyfile_path => '/path/to/key/file'
+# @keyfile      => '/path/to/key/file'
 # @granting_certificate_path => '/path/to/granting.crt'
 
 run Your::Application
