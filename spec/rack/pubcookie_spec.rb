@@ -12,13 +12,8 @@ describe Rack::Pubcookie do
   }
 
   let(:app) {
-    options = defaults # There's a different scope inside Rack::Builder and
-                       # defaults won't be available there
-
-    Rack::Builder.new {
-      use Rack::Pubcookie, options
-      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llamas']] }
-    }.to_app
+    app = lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llamas']] }
+    Rack::Pubcookie.new app, defaults
   }
 
   describe "a valid session" do
