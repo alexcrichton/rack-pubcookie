@@ -136,20 +136,24 @@ describe Rack::Pubcookie do
       defaults[:return_to] = '/users/auth/pubcookie/callback'
     end
 
-    it "displays the return url in the relay_url parameter of the redirect form" do
-      redirect_form = Nokogiri::HTML( get('/auth/pubcookie').body )
+    it "displays the return url in the relay_url parameter of the form" do
+      redirect_form = Nokogiri::HTML(get('/auth/pubcookie').body)
 
-      relay_url = redirect_form.css('input[name=relay_url]').attribute('value').value
+      relay_url =
+        redirect_form.css('input[name=relay_url]').attribute('value').value
 
-      relay_url.should include("/users/auth/pubcookie/callback")
+      relay_url.should =~ %r|/users/auth/pubcookie/callback$|
     end
 
-    it "encodes the return url in the 'seven' parameter of the pubcookie request" do
-      redirect_form = Nokogiri::HTML( get('/auth/pubcookie').body )
-      pubcookie_request_string = redirect_form.css('input[name=pubcookie_g_req]').attribute('value').value
-      pubcookie_request_hash = Rack::Utils.parse_query Base64.decode64(pubcookie_request_string)
+    it "encodes the correct return url of the pubcookie request" do
+      form = Nokogiri::HTML(get('/auth/pubcookie').body)
+      request_string =
+        form.css('input[name=pubcookie_g_req]').attribute('value').value
 
-      pubcookie_request_hash['seven'].should == Base64.encode64('/users/auth/pubcookie/callback').chomp
+      request_hash = Rack::Utils.parse_query Base64.decode64(request_string)
+
+      request_hash['seven'].should eql(
+        Base64.encode64('/users/auth/pubcookie/callback').chomp)
     end
 
   end
