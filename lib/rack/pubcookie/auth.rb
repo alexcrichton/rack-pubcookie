@@ -18,11 +18,12 @@ module Rack
         @appid         = options[:appid]
         @keyfile       = options[:keyfile]
         @granting_cert = options[:granting_cert]
-        @return_to     = options[:return_to] || "/auth/pubcookie/callback"
+        @return_to     = options[:return_to] || '/auth/pubcookie/callback'
 
         if @login_server.nil? || @host.nil? || @appid.nil? || @keyfile.nil? ||
             @granting_cert.nil?
-          raise 'Need all of :login_server, :host, :appid, :keyfile, and :granting_cert specified to use pubcookie!'
+          raise ("Need all of :login_server, :host, :appid, :keyfile, and " +
+            ":granting_cert specified to use pubcookie!")
         end
 
         @granting = OpenSSL::X509::Certificate.new(::File.read(@granting_cert))
@@ -40,8 +41,6 @@ module Rack
       end
 
       def extract_username request
-        # If coments below refer to a URL, they mean this one:
-        # http://svn.cac.washington.edu/viewvc/pubcookie/trunk/src/pubcookie.h?view=markup
         cookie = request.params['pubcookie_g'] || request.cookies['pubcookie_g']
 
         return nil if cookie.nil?
@@ -58,9 +57,9 @@ module Rack
 
         return nil if decrypted.nil?
 
-        # These values are all from the pubcookie source. For more info, see the
-        # above URL. The relevant size definitions are around line 42 and the
-        # struct begins on line 69 ish
+        # These values are all from the pubcookie source. For more info, see
+        # http://bit.ly/pubcookie-doc. The relevant size definitions are around
+        # line 42 and the struct begins on line 69 ish
         user, version, appsrvid, appid, type, creds, pre_sess_tok,
           create_ts, last_ts = decrypted.unpack('A42A4A40A128aaINN')
 
@@ -78,6 +77,7 @@ module Rack
         query = request_login_arguments.to_a.map{ |k, v|
           "#{k}=#{Rack::Utils.escape v}"
         }.join '&'
+
         input_val = Base64.encode64 query
         input_val = input_val.gsub("\n", '')
 
@@ -108,25 +108,25 @@ HTML
 
       protected
 
-      # For a better description on what each of these values are, go to
-      # https://wiki.doit.wisc.edu/confluence/display/WEBISO/Pubcookie+Granting+Request+Interface
       def request_login_arguments
+        # For a better description on what each of these values are, go to
+        #   http://bit.ly/pubcookie-interface
         args = {
-          :one          => @host,     # FQDN of our host
-          :two          => @appid,    # Our AppID for pubcookie
-          :three        => 1,         # ?
-          :four         => 'a5',      # Version/encryption, yet ignored...
-          :five         => 'GET',     # method, even though we lie...
-          :six          => @host,     # our host domain name
-          :seven        => callback_path, # Where to return
-          :eight        => '',        # ?
-          :nine         => 1,         # Probably should be different...
-          :hostname     => @host,     # Again, our FQDN
-          :referer      => '(null)',  # Doesn't matter if no referer
-          :sess_re      => 0,         # Don't force re-authentication
-          :pre_sess_tok => Kernel.rand(2000000), # Just a random 32bit number
-          :flag         => 0,         # ?
-          :file         => ''         # ?
+          :one          => @host,
+          :two          => @appid,
+          :three        => 1,
+          :four         => 'a5',
+          :five         => 'GET',         # We request a POST, this is ignored?
+          :six          => @host,
+          :seven        => callback_path,
+          :eight        => '',            # We have no query string
+          :nine         => 1,
+          :hostname     => @host,
+          :referer      => '(null)',
+          :sess_re      => 0,
+          :pre_sess_tok => Kernel.rand(2000000),
+          :flag         => 0,
+          :file         => ''
         }
 
         args[:seven] = Base64.encode64(args[:seven]).chomp
