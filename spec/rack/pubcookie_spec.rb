@@ -4,15 +4,22 @@ describe Rack::Pubcookie do
 
   include Rack::Test::Methods
 
-  def app
+  let(:defaults) {
+    {:login_server => 'example.com',
+      :host => 'myhost.com', :appid => 'testappid',
+      :keyfile => Rack::Test.fixture_path + '/test.com',
+      :granting_cert => Rack::Test.fixture_path + '/granting.crt'}
+  }
+
+  let(:app) {
+    options = defaults # There's a different scope inside Rack::Builder and
+                       # defaults won't be available there
+
     Rack::Builder.new {
-      use Rack::Pubcookie, :login_server => 'example.com',
-        :host => 'myhost.com', :appid => 'testappid',
-        :keyfile => Rack::Test.fixture_path + '/test.com',
-        :granting_cert => Rack::Test.fixture_path + '/granting.crt'
-      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
+      use Rack::Pubcookie, options
+      run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llamas']] }
     }.to_app
-  end
+  }
 
   describe "a valid session" do
     before :each do
@@ -112,14 +119,8 @@ describe Rack::Pubcookie do
   end
 
   describe "an invalid signature" do
-    def app
-      Rack::Builder.new {
-        use Rack::Pubcookie, :login_server => 'example.com',
-          :host => 'myhost.com', :appid => 'testappid',
-          :keyfile => Rack::Test.fixture_path + '/test.com',
-          :granting_cert => Rack::Test.fixture_path + '/invalid.crt'
-        run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
-      }.to_app
+    before do
+      defaults[:granting_cert] = Rack::Test.fixture_path + '/invalid.crt'
     end
 
     it "realizes the cookie has an invalid signature and discards the cookie" do
@@ -131,15 +132,8 @@ describe Rack::Pubcookie do
   end
 
   context "with a custom return url" do
-    def app
-      Rack::Builder.new {
-        use Rack::Pubcookie, :login_server => 'example.com',
-                             :host => 'myhost.com', :appid => 'testappid',
-                             :keyfile => Rack::Test.fixture_path + '/test.com',
-                             :granting_cert => Rack::Test.fixture_path + '/granting.crt',
-                             :return_to => "/users/auth/pubcookie/callback"
-        run lambda { |env| [200, {'Content-Type' => 'text/plain'}, ['llama']] }
-      }.to_app
+    before do
+      defaults[:return_to] = '/users/auth/pubcookie/callback'
     end
 
     it "displays the return url in the relay_url parameter of the redirect form" do
